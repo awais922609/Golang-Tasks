@@ -116,7 +116,7 @@ func main() {
 
 	VerifyChain(block1, lastHash)
 
-	ChangeBlock(block1.list[1]) //
+	ChangeBlock(block1.list[1])
 
 	VerifyChain(block1, lastHash)
 
