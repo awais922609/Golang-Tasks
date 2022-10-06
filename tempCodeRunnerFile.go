@@ -1,2 +1,1 @@
-var n int
-	// n = (len(ls.list))
+	// ChangeBlock(block1.list[1])

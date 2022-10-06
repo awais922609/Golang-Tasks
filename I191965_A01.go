@@ -75,13 +75,12 @@ func ChangeBlock(b1 *Block) {
 
 func VerifyChain(ls *BlockList, lastHash string) {
 	// var n int
-	// n = (len(ls.list))//
-	for i := 1; i < len(ls.list); i++ {
+	// n = (len(ls.list))
+	for i := 0; i < len(ls.list); i++ {
 		if i == 0 {
-			fmt.Printf("\nVerify CHain 0 block Hash is == %x", ls.list[i].CalculateHash(ls.list[i].transaction+string(ls.list[i].nonce)+"0"))
+			ls.list[i].CalculateHash(ls.list[i].transaction + string(ls.list[i].nonce) + "0")
 		} else {
-			fmt.Printf("\nVerify chain all other Hash is == %x", ls.list[i].CalculateHash(ls.list[i].transaction+string(ls.list[i].nonce)+
-				ls.list[len(ls.list)-i].blockhash))
+			ls.list[i].CalculateHash(ls.list[i].transaction + string(ls.list[i].nonce) + ls.list[i-1].blockhash)
 
 		}
 	}
@@ -117,7 +116,7 @@ func main() {
 
 	VerifyChain(block1, lastHash)
 
-	ChangeBlock(block1.list[1])
+	ChangeBlock(block1.list[1]) //
 
 	VerifyChain(block1, lastHash)
 
