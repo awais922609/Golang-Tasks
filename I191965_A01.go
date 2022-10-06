@@ -37,10 +37,12 @@ type Block struct {
 	blockhash    string
 }
 
-func (b *Block) CalculateHash(stringToHash string) {
+func (b *Block) CalculateHash(stringToHash string) string {
 
 	sum := sha256.Sum256([]byte(stringToHash))
 	b.blockhash = string(sum[:])
+
+	return b.blockhash
 
 }
 
@@ -54,9 +56,11 @@ func (bc1 *BlockList) NewBlock(transaction string, nonce int, previousHash strin
 	block.transaction = transaction
 	block.nonce = nonce
 	block.previousHash = previousHash
-	block.CalculateHash(transaction + string(nonce) + previousHash)
+	fmt.Printf("\nNew Block Hash is == %x", block.CalculateHash(transaction+string(nonce)+previousHash))
 	bc1.list = append(bc1.list, block)
 	lastHash = block.blockhash
+
+	fmt.Printf("\n Last hash is == %x", lastHash)
 
 	return block
 
@@ -64,24 +68,28 @@ func (bc1 *BlockList) NewBlock(transaction string, nonce int, previousHash strin
 
 func ChangeBlock(b1 *Block) {
 	b1.transaction = "Elon Musk to Awais"
-	b1.CalculateHash(b1.transaction + string(b1.nonce) + b1.previousHash)
+
+	fmt.Printf("\nChange Block Hash is == %x", b1.CalculateHash(b1.transaction+string(b1.nonce)+b1.previousHash))
+
 }
 
 func VerifyChain(ls *BlockList, lastHash string) {
-	for i := range ls.list {
+	var n int
+	n = (len(ls.list))
+	for i := n - 1; i >= 0; i-- {
 		if i == 0 {
-			ls.list[i].CalculateHash(ls.list[i].transaction + string(ls.list[i].nonce) + "0")
+			fmt.Printf("\nVerify CHain 0 block Hash is == %x", ls.list[i].CalculateHash(ls.list[i].transaction+string(ls.list[i].nonce)+"0"))
 		} else {
-			ls.list[i].CalculateHash(ls.list[i].transaction + string(ls.list[i].nonce) +
-				ls.list[len(ls.list)-1].blockhash)
+			fmt.Printf("\nVerify chain all other Hash is == %x", ls.list[i].CalculateHash(ls.list[i].transaction+string(ls.list[i].nonce)+
+				ls.list[len(ls.list)-i].blockhash))
 
 		}
 	}
 
 	if ls.list[len(ls.list)-1].blockhash == lastHash {
-		fmt.Println("Chain has been Verified")
+		fmt.Println("\n\n\t\tChain has been Verified")
 	} else {
-		fmt.Println("Chain has been CHanged")
+		fmt.Println("\n\n\t\tChain has been CHanged")
 	}
 
 }
@@ -106,10 +114,6 @@ func main() {
 	block1.NewBlock("Bob to CHarlie", 231, block1.list[len(block1.list)-1].blockhash)
 
 	block1.NewBlock("CHarlie to Alice", 213, block1.list[len(block1.list)-1].blockhash)
-
-	// block1.CreateBlock("alice to bob", 000100, "00000")
-
-	// block1.Print()
 
 	VerifyChain(block1, lastHash)
 
