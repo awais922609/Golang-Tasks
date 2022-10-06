@@ -1,26 +1,3 @@
-/*
-func NewBlock(transaction string, nonce int, previousHash string) *block {
-
-	A method to add new block. To keep things simple, you could provide a
-	sting of your choice as a transaction (e.g., “bob to alice”). Also, use
-	any integer value as a nonce. The CreateHash() method will provide you the
-	block Hash value.
-
-	func ListBlocks() {
-	A method to print all the blocks in a nice format showing block data such
-	as transaction, nonce, previous hash, current block hash
-
-	func ChangeBlock() {
-	function to change block transaction of the given block ref
-
-	func VerifyChain() {
-	function to verify blockchain in case any changes are made. This can be
-	done in two different ways:
-
-	func CalculateHash (stringToHash string) {
-	function for calculating hash of a block
-*/
-
 package main
 
 import (
