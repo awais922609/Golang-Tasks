@@ -74,9 +74,9 @@ func ChangeBlock(b1 *Block) {
 }
 
 func VerifyChain(ls *BlockList, lastHash string) {
-	var n int
-	n = (len(ls.list))
-	for i := n - 1; i >= 0; i-- {
+	// var n int
+	// n = (len(ls.list))//
+	for i := 1; i < len(ls.list); i++ {
 		if i == 0 {
 			fmt.Printf("\nVerify CHain 0 block Hash is == %x", ls.list[i].CalculateHash(ls.list[i].transaction+string(ls.list[i].nonce)+"0"))
 		} else {
