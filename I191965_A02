@@ -1,0 +1,270 @@
+package main
+
+import (
+	"crypto/md5"
+	"crypto/sha256"
+	"encoding/json"
+	"fmt"
+)
+
+var lastHash string // A global variable for storing hash of last block
+
+// structure of block type
+type Block struct {
+	transaction  *Transaction
+	nonce        int
+	previousHash string
+	blockhash    string
+}
+
+// structure of blocklist type
+type BlockList struct {
+	list            []*Block
+	transactionPool []*Transaction
+}
+
+// structure of TRansaction type
+type Transaction struct {
+	TransactionID              string
+	SenderBlockchainAddress    string
+	RecipientBlockchainAddress string
+	Value                      float32
+}
+
+// Calculating Hash Function
+func (b *Block) CalculateHash(stringToHash string) string {
+
+	sum := sha256.Sum256([]byte(stringToHash))
+	b.blockhash = string(sum[:])
+
+	return b.blockhash
+
+}
+
+// Adding a single TRansaction to Transaction Pool
+func (bc1 *Block) AddTransaction(sender string, recipient string, value float32, transactionPool []*Transaction) *Transaction {
+
+	t := new(Transaction)
+
+	t.SenderBlockchainAddress = sender
+
+	t.RecipientBlockchainAddress = recipient
+
+	t.Value = value
+
+	var hashOfTransaction string
+
+	for i := 0; i < 2; i++ {
+		if i == 0 {
+			hashOfTransaction = bc1.CalculateHash(sender + recipient + fmt.Sprintf("%v", value))
+		} else {
+			hashOfTransaction = bc1.CalculateHash(hashOfTransaction)
+		}
+
+	}
+
+	t.TransactionID = hashOfTransaction
+
+	transactionPool = append(transactionPool, t)
+
+	return t
+}
+
+// Function for Creating new block and then appending it to the Blockchain
+func (bc1 *BlockList) NewBlock(list1 []*Transaction, nonce int, previousHash string) *Block {
+
+	block := new(Block)
+
+	block.nonce = nonce
+
+	block.previousHash = previousHash
+
+	b, err := json.Marshal(list1)
+
+	if err != nil {
+
+		fmt.Printf("Error: %s", err)
+
+		return block
+	}
+
+	block.blockhash = block.CalculateHash(string(b) + string(nonce) + previousHash)
+
+	bc1.list = append(bc1.list, block)
+
+	lastHash = block.blockhash
+
+	return block
+
+}
+
+// CHanging TRansaction for the sake of Blockchain testing
+func (ls *BlockList) ChangeBlock(b1 *Block) {
+
+	b1.AddTransaction("Awais", "Elon", 3.0, ls.transactionPool)
+
+	b, err := json.Marshal(ls.transactionPool)
+
+	if err != nil {
+		fmt.Printf("Error: %s", err)
+		return
+	}
+
+	lastHash = b1.CalculateHash(string(b) + string(b1.nonce) + b1.previousHash)
+}
+
+// CHecking if the phenomenon of Blockchain resists against attacks is working or not
+func VerifyChain(ls *BlockList, lastHash string) {
+
+	for i := 0; i < (len(ls.list) - 1); i++ {
+
+		b, err := json.Marshal(ls.transactionPool[i])
+
+		if err != nil {
+			fmt.Printf("Error: %s", err)
+			return
+		}
+		if i == 0 {
+			ls.list[i].CalculateHash(string(b) + string(ls.list[i].nonce) + "0")
+		} else {
+			ls.list[i].CalculateHash(string(b) + string(ls.list[i].nonce) + ls.list[i-1].blockhash)
+
+		}
+	}
+
+	if ls.list[len(ls.list)-1].blockhash == lastHash {
+		fmt.Println("\n\n\t\tChain has been Verified")
+	} else {
+		fmt.Println("\n\n\t\tChain has been CHanged")
+	}
+
+}
+
+// Printing each block in the blockchain along with its data
+func (ls *BlockList) Print() {
+
+	for i := range ls.list {
+
+		fmt.Print("\n============================ Starting of Chain ", i, " ====================== ")
+
+		//json.Marshal for converting structure to string
+		b, err := json.Marshal(ls.transactionPool[i])
+
+		if err != nil {
+
+			fmt.Printf("Error: %s", err)
+			return
+		}
+
+		fmt.Printf("\n\nTransaction is == %s", string(b))
+
+		fmt.Printf("\n\nnonce is == %d", ls.list[i].nonce)
+
+		fmt.Printf("\n\nPrevious hash is == %x", ls.list[i].previousHash)
+
+		fmt.Printf("\n\nBlock hash is == %x", ls.list[i].blockhash)
+
+		fmt.Print("\n============================ Ending of  Chain ", i, " ====================== ")
+
+	}
+}
+
+/* ====================== NOUNCE CALCULATION LOGIC =========================================*/
+func hashWithNonce(s string, nonce int) string {
+
+	return fmt.Sprintf("%x", md5.Sum([]byte(s+string(nonce))))
+
+}
+
+// Write a nonce verification function here that takes an input (nonce, X, Y) and returns True if nonce ||  X= Y.
+func verifyNonce(nonce int, X string, Y string) bool {
+	if hashWithNonce(X, nonce) == Y {
+		return true
+	}
+	return false
+}
+
+// Driver Function
+func main() {
+
+	block1 := new(BlockList) //BlOCKLIST VARIABLE
+
+	block := new(Block) // BLOCK VARIABLE
+
+	var blocks int
+	var s string
+	var r string
+	var amount float32
+
+	fmt.Print("\n How many Blocks you want == ")
+	fmt.Scanln(&blocks)
+
+	if blocks == 0 {
+		fmt.Print("\n======== No Block to be Added ========")
+		return
+	}
+
+	if blocks == 1 {
+		fmt.Print("\n======== In this case I have assumed chain can not modify ========")
+	}
+
+	if blocks < 100 {
+		for j := 0; j < blocks; j++ {
+
+			fmt.Print("\n++++++++++++++++ Input of Block ", j, "is ++++++++++++++++ ")
+
+			fmt.Print("\n Enter Sender == ")
+			fmt.Scanln(&s)
+
+			fmt.Print("\n How Receiver == ")
+			fmt.Scanln(&r)
+
+			fmt.Print("\n How your Amount == ")
+			fmt.Scanln(&amount)
+
+			t := block.AddTransaction(s, r, amount, block1.transactionPool)
+
+			block1.transactionPool = append(block1.transactionPool, t)
+
+			if j == 0 {
+				block1.NewBlock(block1.transactionPool, 123, "0")
+			} else {
+				block1.NewBlock(block1.transactionPool, 123, block1.list[len(block1.list)-1].blockhash)
+			}
+
+		}
+
+	}
+	block1.Print()
+	fmt.Print("\n============================ Before Block Change ====================== ")
+
+	VerifyChain(block1, lastHash)
+
+	block1.ChangeBlock(block1.list[0])
+
+	fmt.Print("\n============================ After Block Change ====================== ")
+
+	VerifyChain(block1, lastHash)
+
+	fmt.Printf("\nI am unable to find such nounce that can give me 3 zeros in the range of 1 lac digits")
+	fmt.Printf("\nIMplemented the method at end of main just copy it and add it to the end of new Block")
+	fmt.Printf("\nYou would see POC But no such hash is being found")
+	/*
+			nonce1 := 0
+
+			hash := block.blockhash
+
+			for {
+				for nonce1=1 ; nonce1 < 100000; nonce1++ {
+				hash = hashWithNonce(string(b), nonce1)
+				if hash[:3] == "000" {
+					break
+				}
+				nonce1++
+				fmt.Print("\n Nounce Testing is == ", nonce1)
+			}
+		}
+			fmt.Println("The nonce is", nonce)
+	*/
+
+}
