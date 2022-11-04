@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 var lastHash string // A global variable for storing hash of last block
@@ -15,6 +16,7 @@ type Block struct {
 	nonce        int
 	previousHash string
 	blockhash    string
+	timestamp    string
 }
 
 // structure of blocklist type
@@ -78,6 +80,10 @@ func (bc1 *BlockList) NewBlock(list1 []*Transaction, nonce int, previousHash str
 	block.nonce = nonce
 
 	block.previousHash = previousHash
+
+	dt := time.Now()
+
+	block.timestamp = dt.String()
 
 	b, err := json.Marshal(list1)
 
@@ -163,6 +169,8 @@ func (ls *BlockList) Print() {
 		fmt.Printf("\n\nPrevious hash is == %x", ls.list[i].previousHash)
 
 		fmt.Printf("\n\nBlock hash is == %x", ls.list[i].blockhash)
+
+		fmt.Println("\n\nTIme Stamp is ==", ls.list[i].timestamp)
 
 		fmt.Print("\n============================ Ending of  Chain ", i, " ====================== ")
 
